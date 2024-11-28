@@ -1,7 +1,11 @@
+'use client'
+
+import { Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '~/components/ui/button'
 import { Progress } from '~/components/ui/progress'
 import { trpc } from '~/trpc/react'
+import { useRouter } from 'next/navigation'
 
 type Option = {
   text: string
@@ -56,6 +60,9 @@ export function Questions() {
   const [question, setQuestion] = useState<number | null>(0)
   const [score, setScore] = useState(0)
 
+  const { mutateAsync, isPending } = trpc.assessment.create.useMutation()
+  const router = useRouter()
+
   function handleChose(level: number) {
     setQuestion((q) => {
       const exists = questions[q! + 1]
@@ -65,15 +72,45 @@ export function Questions() {
     setScore((s) => s + level)
   }
 
-  const { question: text, options } = (question &&
-    questions[question]) as Question
-  const percentage = score * 5
+  async function handleCreate() {
+    await mutateAsync({
+      type: 'Cognitive status',
+      patientName: 'Oswald Becker',
+      date: new Date(),
+      finalScore: score * questions.length,
+      questions: [],
+    })
+
+    router.push('/')
+  }
+
+  if (question === null || question === undefined) {
+    return (
+      <div className="flex flex-col items-center gap-6">
+        <span className="font-bold text-4xl">{score * questions.length}%</span>
+
+        <Button className="w-20" onClick={handleCreate}>
+          {isPending ? <Loader2 className="animate-spin" /> : 'Submit'}
+        </Button>
+      </div>
+    )
+  }
+
+  const { question: text, options } = questions[question]!
 
   return (
-    <div className="mx-4 flex w-full max-w-3xl flex-col gap-6">
-      <Progress value={percentage} className="w-full" />
+    <div className="mx-4 flex w-full max-w-3xl flex-col gap-4">
+      <div className="flex flex-col gap-1.5">
+        <span className="font-bold">
+          {question + 1} / {questions.length}
+        </span>
+        <Progress
+          value={(question / questions.length) * 100}
+          className="w-full"
+        />
+      </div>
 
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-3">
         <h2 className="font-bold text-3xl">{text}</h2>
 
         <div className="flex gap-1.5">
