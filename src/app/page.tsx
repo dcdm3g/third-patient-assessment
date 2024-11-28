@@ -9,7 +9,7 @@ export default function Home() {
         <div className="flex items-center justify-between">
           <h1 className="font-bold text-2xl">Latest Assessments</h1>
           <Button variant="outline" asChild>
-            <Link href="/assessments/create">New Assessment</Link>
+            <Link href="/assessment">New Assessment</Link>
           </Button>
         </div>
 
